@@ -26,13 +26,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import scipy as si
 
-alpha =  0.5 ;
-matrix =np.matrix(np.eye(10)*(1+alpha) + np.eye(10, k = -1) *(-alpha/2) + np.eye(10, k = 1) *(-alpha/2))
-d= np.zeros(10)
-d[0] , d[-1]=0, 1
-d = d*(alpha/2)
-np.linalg.solve(matrix, d)
-
+#과제만을 위한...
 def thomas_al(alpha, size,d1,dn):
     matrix =np.matrix(np.eye(size)*(1+alpha) + np.eye(size, k = -1) *(-alpha/2) + np.eye(size, k = 1) *(-alpha/2))
     d= np.zeros(size)
@@ -41,21 +35,125 @@ def thomas_al(alpha, size,d1,dn):
     sol = np.linalg.solve(matrix, d).round(3)
     return sol
 
-sol = thomas_al(0.1,10,0,1)
+
+#print('d1 = 0, dn = 1')
+#a = []
+#for i in np.arange(0.5,5.1,0.1):
+#    x = thomas_al(i,10,0,1).round(3)
+#    a.append(x)
+#sol_1 = pd.DataFrame(a, index = np.arange(0.5,5.1,0.1).round(1),columns = [ 'x1','x2','x3','x4','x5','x6','x7','x8','x9','x10'])
+#
+#
+#
+#print('d1= 0, d1=5 ')
+#b = []
+#for i in np.arange(0.5,5.1,0.1):
+#    y = thomas_al(i,10,0,5).round(3)
+#    b.append(y)
+#sol_2 = pd.DataFrame(b, index = np.arange(0.5,5.1,0.1).round(1),columns = [ 'x1','x2','x3','x4','x5','x6','x7','x8','x9','x10'])
 
 
-for i in np.arange(0.5,5,0.1):
-    x = thomas_al(i,10,0,1).round(2)
-    print(x)
-print('-'*50)
-print('-'*50)
-'''-> 해석: alpha값이 증가할수록, x_ndl 증가하며 0이 아닌 값을 같는 x가 많아진다.
-왜그럴까?
-'''
-for i in np.arange(0.5,5,0.1):
-    y = thomas_al(i,10,0,5).round(2)
-    print(y)
-print('-'*50)
-print('-'*50)
+#project 진행할때는 이 방법이 나을 
+def thomas_al2(diagonal,l_diagonal,u_diagonal,d):
+    matrix = np.matrix(np.diag(diagonal)+np.diag(l_diagonal,k=-1)+np.diag(u_diagonal,k=1))
+    x = np.linalg.solve(matrix,d).round(3)
+    return x
 
-#해석
+emp = []  #appending 위해서 만든 list
+for alpha in np.arange(0.5,5.1,0.1):
+    a = np.ones(10) * (1+alpha) #diagonal
+    b = np.ones(9) * (-alpha/2) #lower diagonal
+    c = np.ones(9) * (-alpha/2) #upper diagonal
+    d = np.zeros(10)
+    d[0] =0
+    d[-1] = 1
+    d = d*alpha/2
+    z = thomas_al2(a,b,c,d)
+    emp.append(z)
+sol_3 = pd.DataFrame(emp, index = np.arange(0.5,5.1,0.1).round(1), columns = [ 'x1','x2','x3','x4','x5','x6','x7','x8','x9','x10'])
+
+
+emp = []
+for alpha in np.arange(0.5,5.1,0.1):
+    a = np.ones(10) * (1+alpha) #diagonal
+    b = np.ones(9) * (-alpha/2) #lower diagonal
+    c = np.ones(9) * (-alpha/2) #upper diagonal
+    d = np.zeros(10)
+    d[0] =0
+    d[-1] = 5
+    d = d*alpha/2
+    z = thomas_al2(a,b,c,d)
+    emp.append(z)    
+sol_4 = pd.DataFrame(emp, index = np.arange(0.5,5.1,0.1).round(1),columns = [ 'x1','x2','x3','x4','x5','x6','x7','x8','x9','x10'])
+print ("using inverse matrix (d=5)")
+print (sol_4)
+print ("="*30)
+def cal(a,b,c,d):
+    a1 =[a[0]]
+    d1 =[d[0]] 
+    for i in range(len(c)):
+        x = a[i+1] - (b[i+1] * c[i]/a1[i])
+        y = d[i+1] - (b[i+1] * d1[i]/a1[i])
+        a1.append(x)
+        d1.append(y)
+    return a1, d1
+
+##Thomas algorism에서 a prime 과 d prime이 이떻게 되는지 계산 해봄.
+emp_1 = []
+emp_2 = []
+emp_3 = []
+for alpha in np.arange(0.5,5.1,0.1):
+    a= np.ones(10) * (1+alpha)
+    b = np.ones(10) * (-alpha/2)
+    b[0] = 0
+    c = np.ones(9) * (-alpha/2)
+    d = np.zeros(10)
+    d[0] =0
+    d[-1] = 1
+    d = d*alpha/2
+    a1, d1 = cal(a,b,c,d)
+    emp_1.append(a1)
+    emp_2.append(d1)
+    emp_3.append(c)
+
+# Thomas Algorithm d=1
+calculation_a = pd.DataFrame(emp_1, index = np.arange(0.5,5.1,0.1).round(1), columns= ['a1','a2','a3','a4','a5','a6','a7','a8','a9','a10'])
+calculation_d = pd.DataFrame(emp_2, index = np.arange(0.5,5.1,0.1).round(1), columns= ['d1','d2','d3','d4','d5','d6','d7','d8','d9','d10'])
+calculation_d5 = calculation_d * 5
+calculation_c = pd.DataFrame(emp_3, index = np.arange(0.5,5.1,0.1).round(1), columns= ['c1','c2','c3','c4','c5','c6','c7','c8','c9'])
+d_result = pd.DataFrame(index = np.arange(0.5,5.1,0.1).round(1), columns= ['x1','x2','x3','x4','x5','x6','x7','x8','x9','x10'])
+
+d10 = calculation_d['d10']/calculation_a['a10']
+d_result['x10'] = d10
+
+for i in range(9,0,-1):
+    if i ==9:
+        d_result['x'+str(i)]=(calculation_d['d'+str(i)]/calculation_a['a'+str(i)])-(calculation_c['c'+str(i)]/calculation_a['a'+str(i)])*d10
+    else:
+        d_result['x'+str(i)]=(calculation_d['d'+str(i)]/calculation_a['a'+str(i)])-(calculation_c['c'+str(i)]/calculation_a['a'+str(i)])*d_result['x'+str(i+1)]
+
+print ("using thomas algorithm (d=1)")
+print (d_result.round(3))
+
+# Thomas Algorithm d=5
+d10 = calculation_d5['d10']/calculation_a['a10']
+d_result['x10'] = d10
+
+for i in range(9,0,-1):
+    if i ==9:
+        d_result['x'+str(i)]=(calculation_d5['d'+str(i)]/calculation_a['a'+str(i)])-(calculation_c['c'+str(i)]/calculation_a['a'+str(i)])*d10
+    else:
+        d_result['x'+str(i)]=(calculation_d5['d'+str(i)]/calculation_a['a'+str(i)])-(calculation_c['c'+str(i)]/calculation_a['a'+str(i)])*d_result['x'+str(i+1)]
+
+print ("using thomas algorithm (d=5)")
+print (d_result.round(3))
+
+
+
+
+# print ("="*30)
+# print (calculation_a)
+# print ("="*30)
+# print (calculation_d)
+# print ("="*30)
+# print (calculation_c)
