@@ -21,7 +21,7 @@ from numpy import arange,array,ones#,random,linalg
 from pylab import plot,show
 from scipy import stats
 import statsmodels.api as sm
-os.chdir('C:\\Users\한승표\Desktop\local_vol surface')
+#os.chdir('C:\\Users\한승표\Desktop\local_vol surface')
 market_data = pd.read_excel(r'ksp200call2.xlsx')
 #%%
 #기초 함수
@@ -55,7 +55,7 @@ def implied_vol(s,k,r,q,t,optionprice,option_type,init=0.1,tol=1e-6):
 #    return (sp.optimize.brentq(f,-5,5))
 
 def impvol_f1(mdata,a,b,c,d,e,f,g):
-    f = a +c*np.exp(b*mdata.iloc[:,1])+d*mdata.iloc[:,0]+e*mdata.iloc[:,0]**2 +f*np.power(mdata.iloc[:,0],3) +g *np.power(mdata.iloc[:,0],4)
+    f = a +c*np.exp(b*mdata.iloc[:,1])+d*mdata.iloc[:,0]+e*(mdata.iloc[:,0]**2) +f*np.power(mdata.iloc[:,0],3) +g *np.power(mdata.iloc[:,0],4)
     return f
 
 def impvol_f2(m,t,a,b,c,d,e,f,g):
@@ -92,17 +92,15 @@ t = pd.DataFrame(t)
 mdata = pd.concat([m,t],axis=1)
 y = impvol_f1(mdata, 0.1, 0.1, 0.1,0.1,0.1,0.1,0.1) # 초기값
 a = sp.optimize.curve_fit(impvol_f1, mdata, imp_vol, maxfev=3000)[0]
-
 #moneyness, 잔존만기 범위 설정 (구할 내재 변동성의 범위를 설정)
 m = np.linspace(min(m.values)[0],max(m.values)[0],365)
 t = np.linspace(min(t.values)[0],max(t.values)[0],365)
 mdata1 = pd.concat([pd.DataFrame(m,columns=['m']),pd.DataFrame(t,columns=['t'])],axis=1)
 
 #%%
-#해상 moneyness, 잔존 만기 범위에 따른 행사가격
+#해당 moneyness, 잔존 만기 범위에 따른 행사가격
 #t = np.linspace(0,3,365)
 x = (s*np.exp((r-q)*t))/np.exp(m)
-
 #내재변동성 함수 이용한 도함수 계산
 imp_vol = pd.DataFrame(np.zeros((len(m),len(t))))
 dt = pd.DataFrame(np.zeros((len(m),len(t))))
@@ -130,11 +128,27 @@ for i in range(len(x)):
                (dx.iloc[i,j]**2)*np.sqrt(t[j])));
                         
 #%%
-#x = x[::-1] #plot하는데 있어서, x 값을 작은 값부터 큰값으로 그리드 그리기 
+#implied vol surface
 fig = plt.figure(figsize=(8, 6))
 ax = fig.gca(projection='3d')
 xnew,tnew = np.meshgrid(x, t)
-surf = ax.plot_surface(xnew, tnew, local_vol.T,cmap=cm.coolwarm,linewidth=0, antialiased=False)
+surf = ax.plot_surface(xnew, tnew, imp_vol.T,cmap=cm.coolwarm,linewidth=0, antialiased=False)
 fig.colorbar(surf, shrink=0.5, aspect=5)
+plt.xlabel('strike price')
+plt.ylabel('time')
+plt.title('implied_volatility')
 plt.show()
-        
+#%%
+#Local vol surface
+fig2 = plt.figure(figsize=(8, 6))
+ax = fig2.gca(projection='3d')
+xnew,tnew = np.meshgrid(x, t)
+surf = ax.plot_surface(xnew, tnew, local_vol.T,cmap=cm.coolwarm,linewidth=0, antialiased=False)
+fig2.colorbar(surf, shrink=0.5, aspect=5)
+plt.xlabel('strike price')
+plt.ylabel('time')
+plt.title('Local volatility')
+plt.show()
+#%%
+#def sigma(a1,a2,a3,a4,a5,a6,s0,k,T):
+#    vol = a1 + a2*np.log(k/s0)+a3/np.sqrt(T) + a4*np.log()
