@@ -130,6 +130,7 @@ for i in range(len(x)):
                (dx.iloc[i,j]**2)*np.sqrt(t[j])));
                         
 #%%
+x = x[::-1] #plot하는데 있어서, x 값을 작은 값부터 큰값으로 그리드 그리기 
 fig = plt.figure(figsize=(8, 6))
 ax = fig.gca(projection='3d')
 xnew,tnew = np.meshgrid(x, t)
