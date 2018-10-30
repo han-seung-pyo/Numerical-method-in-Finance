@@ -4,7 +4,8 @@ Created on Fri Sep 28 14:52:21 2018
 
 @author: 한승표
 """
-
+##현재 local_vol의 문제점: implied_vol 계수 추정하는데 있어서, 계수 추정이 제대로 되지 않음
+#python의 sp.optimize.curve_fit가 어떻게 되는지 확인해볼 필요 있음. 
 import numpy as np
 import pandas as pd
 import scipy as sp
